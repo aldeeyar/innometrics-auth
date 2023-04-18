@@ -47,6 +47,7 @@ jobs:
 
   push_to_dokku:
     name: Push to Dokku
+    runs-on: ubuntu-latest
     steps:
       - name: Push to dokku
         uses: dokku/github-action@master
