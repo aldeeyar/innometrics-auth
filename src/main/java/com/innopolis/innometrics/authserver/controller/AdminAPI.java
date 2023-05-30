@@ -10,6 +10,7 @@ import com.innopolis.innometrics.authserver.exceptions.ValidationException;
 import com.innopolis.innometrics.authserver.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +43,13 @@ public class AdminAPI {
     @Autowired
     private TeammembersService teammembersService;
 
+    @GetMapping("/demo")
+    @ResponseBody
+    public ResponseEntity<String> getDemo() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+    	responseHeaders.set("MyResponseHeader", "MyValue");
+    	return new ResponseEntity<String>("Version1", responseHeaders, HttpStatus.OK);
+    }
 
     @PostMapping("/Project")
     public ResponseEntity<ProjectRequest> createProject(@RequestBody ProjectRequest project,
