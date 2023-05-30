@@ -42,6 +42,13 @@ public class AdminAPI {
     @Autowired
     private TeammembersService teammembersService;
 
+    @GetMapping("/demo")
+    @ResponseBody
+    public ResponseEntity<String> getDemo() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+    	responseHeaders.set("MyResponseHeader", "MyValue");
+    	return new ResponseEntity<String>("Version1", responseHeaders, HttpStatus.OK);
+    }
 
     @PostMapping("/Project")
     public ResponseEntity<ProjectRequest> createProject(@RequestBody ProjectRequest project,
