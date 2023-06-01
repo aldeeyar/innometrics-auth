@@ -8,6 +8,8 @@ on:
   push:
     branches:
       - main
+  repository_dispatch:
+    type: common-trigger
 
 jobs:
   tests:
