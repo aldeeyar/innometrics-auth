@@ -1,19 +1,53 @@
 package com.innopolis.innometrics.authserver.controller;
 
-import com.innopolis.innometrics.authserver.DTO.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.innopolis.innometrics.authserver.DTO.CompanyListRequest;
+import com.innopolis.innometrics.authserver.DTO.CompanyRequest;
+import com.innopolis.innometrics.authserver.DTO.PageListResponse;
+import com.innopolis.innometrics.authserver.DTO.PermissionResponse;
+import com.innopolis.innometrics.authserver.DTO.ProfileRequest;
+import com.innopolis.innometrics.authserver.DTO.ProjectListRequest;
+import com.innopolis.innometrics.authserver.DTO.ProjectRequest;
+import com.innopolis.innometrics.authserver.DTO.RoleListResponse;
+import com.innopolis.innometrics.authserver.DTO.RoleRequest;
+import com.innopolis.innometrics.authserver.DTO.RoleResponse;
+import com.innopolis.innometrics.authserver.DTO.TeamListRequest;
+import com.innopolis.innometrics.authserver.DTO.TeamRequest;
+import com.innopolis.innometrics.authserver.DTO.TeammembersListRequest;
+import com.innopolis.innometrics.authserver.DTO.TeammembersRequest;
+import com.innopolis.innometrics.authserver.DTO.UserListResponse;
+import com.innopolis.innometrics.authserver.DTO.UserResponse;
+import com.innopolis.innometrics.authserver.DTO.WorkingTreeListRequest;
+import com.innopolis.innometrics.authserver.DTO.WorkingTreeRequest;
 import com.innopolis.innometrics.authserver.config.JwtToken;
 import com.innopolis.innometrics.authserver.entitiy.Permission;
 import com.innopolis.innometrics.authserver.entitiy.Project;
 import com.innopolis.innometrics.authserver.entitiy.Role;
 import com.innopolis.innometrics.authserver.entitiy.User;
 import com.innopolis.innometrics.authserver.exceptions.ValidationException;
-import com.innopolis.innometrics.authserver.service.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.innopolis.innometrics.authserver.service.CompanyService;
+import com.innopolis.innometrics.authserver.service.ProfileService;
+import com.innopolis.innometrics.authserver.service.ProjectService;
+import com.innopolis.innometrics.authserver.service.RoleService;
+import com.innopolis.innometrics.authserver.service.TeamService;
+import com.innopolis.innometrics.authserver.service.TeammembersService;
+import com.innopolis.innometrics.authserver.service.UserService;
 
 @RestController
 @RequestMapping("AdminAPI")
@@ -47,13 +81,13 @@ public class AdminAPI {
     @ResponseBody
     public ResponseEntity<String> getDemo() {
         HttpHeaders responseHeaders = new HttpHeaders();
-    	responseHeaders.set("MyResponseHeader", "MyValue");
-    	return new ResponseEntity<String>("Version4", responseHeaders, HttpStatus.OK);
+        responseHeaders.set("MyResponseHeader", "MyValue");
+        return new ResponseEntity<String>("Version5", responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/Project")
     public ResponseEntity<ProjectRequest> createProject(@RequestBody ProjectRequest project,
-                                                        @RequestHeader(required = false) String Token) {
+            @RequestHeader(required = false) String Token) {
         String UserName = "API";
 
         if (project == null)
@@ -71,8 +105,8 @@ public class AdminAPI {
 
     @PutMapping("/Project/{id}")
     public ResponseEntity<ProjectRequest> updateProject(@PathVariable Integer id,
-                                                        @RequestBody ProjectRequest project,
-                                                        @RequestHeader(required = false) String Token) {
+            @RequestBody ProjectRequest project,
+            @RequestHeader(required = false) String Token) {
         String UserName = "API";
 
         if (project == null)
@@ -118,7 +152,8 @@ public class AdminAPI {
     }
 
     @DeleteMapping("/Project")
-    public ResponseEntity<ProjectRequest> deleteProject(@RequestParam Integer id, @RequestHeader(required = false) String Token) {
+    public ResponseEntity<ProjectRequest> deleteProject(@RequestParam Integer id,
+            @RequestHeader(required = false) String Token) {
 
         String UserName = "API";
         if (Token != null && Token != "")
@@ -134,8 +169,7 @@ public class AdminAPI {
             throw new IllegalArgumentException(e.getMessage());
         } catch (Exception e) {
             throw new ValidationException(
-                    "Entries from 'repos_x_project' and 'agents_x_project' tables with such projectid must be deleted firstly"
-            );
+                    "Entries from 'repos_x_project' and 'agents_x_project' tables with such projectid must be deleted firstly");
         }
     }
 
@@ -161,12 +195,10 @@ public class AdminAPI {
                 response.getProjectList().add(pTemp);
             }
 
-
             return ResponseEntity.ok(response);
         } else
             throw new ValidationException("Not enough data provided");
     }
-
 
     @GetMapping("/Role/Permissions/{RoleName}")
     public ResponseEntity<PageListResponse> getPages(@PathVariable String RoleName) {
@@ -177,7 +209,6 @@ public class AdminAPI {
         return ResponseEntity.ok(pageListResponse);
     }
 
-
     @GetMapping("/Role/{RoleName}")
     public ResponseEntity<RoleResponse> getRole(@PathVariable String RoleName) {
         RoleResponse roleResponse = roleService.getRole(RoleName);
@@ -186,7 +217,6 @@ public class AdminAPI {
 
         return ResponseEntity.ok(roleResponse);
     }
-
 
     @GetMapping("/Roles")
     public ResponseEntity<RoleListResponse> getRoles() {
@@ -197,9 +227,9 @@ public class AdminAPI {
         return ResponseEntity.ok(roleResponseList);
     }
 
-
     @PostMapping("/Role")
-    public ResponseEntity<RoleResponse> CreateRole(@RequestBody RoleRequest roleRequest, @RequestHeader(required = false) String Token) {
+    public ResponseEntity<RoleResponse> CreateRole(@RequestBody RoleRequest roleRequest,
+            @RequestHeader(required = false) String Token) {
         System.out.println("Create role method started");
 
         if (roleService.getRole(roleRequest.getName()) != null)
@@ -215,7 +245,8 @@ public class AdminAPI {
     }
 
     @PutMapping("/Role")
-    public ResponseEntity<RoleResponse> updateRole(@RequestBody RoleRequest roleRequest, @RequestHeader(required = false) String Token) {
+    public ResponseEntity<RoleResponse> updateRole(@RequestBody RoleRequest roleRequest,
+            @RequestHeader(required = false) String Token) {
         System.out.println("Update role method started");
 
         if (roleRequest == null) {
@@ -226,16 +257,13 @@ public class AdminAPI {
             throw new ValidationException("Not enough data provided");
         }
 
-
         if (roleService.getRole(roleRequest.getName()) == null) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
 
-
         RoleResponse roleResponse = roleService.updateRole(roleRequest);
         return new ResponseEntity<>(roleResponse, HttpStatus.CREATED);
     }
-
 
     @GetMapping("/User/Permissions/{UserName}")
     public ResponseEntity<PermissionResponse> getPermissions(@PathVariable String UserName) {
@@ -244,7 +272,6 @@ public class AdminAPI {
 
             if (userDetails == null)
                 return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-
 
             PermissionResponse response = new PermissionResponse();
             for (Permission p : userDetails.getRole().getPermissions()) {
@@ -264,12 +291,10 @@ public class AdminAPI {
             if (roleService.findByName(permissionResponse.getRole()) == null)
                 return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 
-
             return ResponseEntity.ok(roleService.createPermissions(permissionResponse));
         } else
             throw new ValidationException("Not enough data provided");
     }
-
 
     @PostMapping("/User/Role")
     public ResponseEntity<UserResponse> setRoleToUser(@RequestParam String RoleName, @RequestParam String UserName) {
@@ -295,11 +320,12 @@ public class AdminAPI {
     }
 
     @PostMapping("/User/Profile")
-    public ResponseEntity<ProfileRequest> updateProfileOfUser(@RequestBody ProfileRequest profileRequest, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
-//        String email = "";
-//        if (Token != null && !Token.equals(""))
-//            email = jwtToken.getUsernameFromToken(Token);
+    public ResponseEntity<ProfileRequest> updateProfileOfUser(@RequestBody ProfileRequest profileRequest,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
+        // String email = "";
+        // if (Token != null && !Token.equals(""))
+        // email = jwtToken.getUsernameFromToken(Token);
         if (profileRequest == null)
             throw new ValidationException("Not enough data provided");
 
@@ -317,8 +343,9 @@ public class AdminAPI {
     }
 
     @DeleteMapping("/User/Profile")
-    public ResponseEntity<ProfileRequest> deleteProfile(@RequestParam Integer id, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<ProfileRequest> deleteProfile(@RequestParam Integer id,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String email = "";
         if (Token != null && Token != "")
             email = jwtToken.getUsernameFromToken(Token);
@@ -332,8 +359,9 @@ public class AdminAPI {
     }
 
     @GetMapping("/User/Profile")
-    public ResponseEntity<ProfileRequest> findByMacaddress(@RequestParam String macaddress, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<ProfileRequest> findByMacaddress(@RequestParam String macaddress,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String email = "";
         if (Token != null && Token != "")
             email = jwtToken.getUsernameFromToken(Token);
@@ -346,14 +374,13 @@ public class AdminAPI {
         if (profileRequest == null)
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 
-
         return ResponseEntity.ok(profileRequest);
     }
 
     @PostMapping("/Company")
     public ResponseEntity<CompanyRequest> createCompany(@RequestBody CompanyRequest companyRequest,
-                                                        @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -372,9 +399,9 @@ public class AdminAPI {
 
     @PutMapping("/Company/{id}")
     public ResponseEntity<CompanyRequest> updateCompany(@PathVariable Integer id,
-                                                        @RequestBody CompanyRequest companyRequest,
-                                                        @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+            @RequestBody CompanyRequest companyRequest,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -396,8 +423,9 @@ public class AdminAPI {
     }
 
     @DeleteMapping("/Company")
-    public ResponseEntity<CompanyRequest> deleteCompany(@RequestParam Integer id, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<CompanyRequest> deleteCompany(@RequestParam Integer id,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -411,13 +439,15 @@ public class AdminAPI {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(e.getMessage());
         } catch (Exception e) {
-            throw new ValidationException("Entries from 'agents_x_company' table with such companyid must be deleted firstly");
+            throw new ValidationException(
+                    "Entries from 'agents_x_company' table with such companyid must be deleted firstly");
         }
     }
 
     @GetMapping("/Company")
-    public ResponseEntity<CompanyRequest> findByCompanyId(@RequestParam Integer id, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<CompanyRequest> findByCompanyId(@RequestParam Integer id,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -426,38 +456,35 @@ public class AdminAPI {
             throw new ValidationException("Not enough data provided");
 
         return ResponseEntity.ok(
-                companyService.findByCompanyId(id)
-        );
+                companyService.findByCompanyId(id));
     }
 
     @GetMapping("/Company/active")
     public ResponseEntity<CompanyListRequest> findAllActiveCompanies(@RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
 
         return ResponseEntity.ok(
-                companyService.findAllActiveCompanies()
-        );
+                companyService.findAllActiveCompanies());
     }
 
     @GetMapping("/Company/all")
     public ResponseEntity<CompanyListRequest> findAllCompanies(@RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
 
         return ResponseEntity.ok(
-                companyService.findAllCompanies()
-        );
+                companyService.findAllCompanies());
     }
 
     @PostMapping("/Team")
     public ResponseEntity<TeamRequest> createTeam(@RequestBody TeamRequest teamRequest,
-                                                  @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -476,9 +503,9 @@ public class AdminAPI {
 
     @PutMapping("/Team/{id}")
     public ResponseEntity<TeamRequest> updateTeam(@PathVariable Integer id,
-                                                  @RequestBody TeamRequest teamRequest,
-                                                  @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+            @RequestBody TeamRequest teamRequest,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -500,8 +527,9 @@ public class AdminAPI {
     }
 
     @DeleteMapping("/Team")
-    public ResponseEntity<TeamRequest> deleteTeam(@RequestParam Integer id, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<TeamRequest> deleteTeam(@RequestParam Integer id,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -515,38 +543,38 @@ public class AdminAPI {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(e.getMessage());
         } catch (Exception e) {
-            throw new ValidationException("Entries from 'externalproject_x_team' table with such teamid must be deleted firstly");
+            throw new ValidationException(
+                    "Entries from 'externalproject_x_team' table with such teamid must be deleted firstly");
         }
     }
 
     @GetMapping("/Team/active")
     public ResponseEntity<TeamListRequest> findAllActiveTeams(@RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
 
         return ResponseEntity.ok(
-                teamService.findAllActiveTeams()
-        );
+                teamService.findAllActiveTeams());
     }
 
     @GetMapping("/Team/all")
     public ResponseEntity<TeamListRequest> findAllTeams(@RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
 
         return ResponseEntity.ok(
-                teamService.findAllTeams()
-        );
+                teamService.findAllTeams());
     }
 
     @GetMapping("/Team")
-    public ResponseEntity<TeamListRequest> findTeamBy(@RequestParam(required = false) Integer teamId, @RequestParam(required = false) Integer companyId,
-                                                      @RequestParam(required = false) Integer projectId, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<TeamListRequest> findTeamBy(@RequestParam(required = false) Integer teamId,
+            @RequestParam(required = false) Integer companyId,
+            @RequestParam(required = false) Integer projectId, @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -555,15 +583,14 @@ public class AdminAPI {
             throw new ValidationException("Not enough data provided");
 
         return ResponseEntity.ok(
-                teamService.findByTeamProperties(teamId, companyId, projectId)
-        );
+                teamService.findByTeamProperties(teamId, companyId, projectId));
     }
 
     @PostMapping("/Teammember")
     public ResponseEntity<TeammembersRequest> createTeammember(@RequestBody TeammembersRequest teammembersRequest,
-                                                               @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
-        String UserName = "API";//teammembersRequest.getEmail();
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
+        String UserName = "API";// teammembersRequest.getEmail();
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
 
@@ -582,13 +609,12 @@ public class AdminAPI {
         return ResponseEntity.ok(response);
     }
 
-
     @PutMapping("/Teammember/{id}")
     public ResponseEntity<TeammembersRequest> updateTeammember(@PathVariable Integer id,
-                                                               @RequestBody TeammembersRequest teammembersRequest,
-                                                               @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
-        String UserName = "API";//teammembersRequest.getEmail();
+            @RequestBody TeammembersRequest teammembersRequest,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
+        String UserName = "API";// teammembersRequest.getEmail();
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
 
@@ -602,7 +628,8 @@ public class AdminAPI {
         teammembersRequest.setUpdateby(UserName);
         TeammembersRequest response;
 
-        if (!(teammembersService.existsById(teammembersRequest.getMemberid()) || teammembersService.existInTheTeam(teammembersRequest.getTeamid(), teammembersRequest.getEmail()))) {
+        if (!(teammembersService.existsById(teammembersRequest.getMemberid())
+                || teammembersService.existInTheTeam(teammembersRequest.getTeamid(), teammembersRequest.getEmail()))) {
             teammembersRequest.setCreatedby(UserName);
             response = teammembersService.create(teammembersRequest);
         } else {
@@ -613,8 +640,9 @@ public class AdminAPI {
     }
 
     @DeleteMapping("/Teammember")
-    public ResponseEntity<TeammembersRequest> deleteTeammember(@RequestParam Integer id, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<TeammembersRequest> deleteTeammember(@RequestParam Integer id,
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -622,40 +650,39 @@ public class AdminAPI {
         if (id == null)
             throw new ValidationException("Not enough data provided");
 
-
         teammembersService.delete(id);
 
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/Teammember/active")
-    public ResponseEntity<TeammembersListRequest> findAllActiveTeammembers(@RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<TeammembersListRequest> findAllActiveTeammembers(
+            @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
 
         return ResponseEntity.ok(
-                teammembersService.findAllActiveTeammembers()
-        );
+                teammembersService.findAllActiveTeammembers());
     }
 
     @GetMapping("/Teammember/all")
     public ResponseEntity<TeammembersListRequest> findAllTeammembers(@RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
 
         return ResponseEntity.ok(
-                teammembersService.findAllTeammembers()
-        );
+                teammembersService.findAllTeammembers());
     }
 
     @GetMapping("/Teammember")
-    public ResponseEntity<TeammembersListRequest> findTeammemberBy(@RequestParam(required = false) Integer memberId, @RequestParam(required = false) Integer teamId,
-                                                                   @RequestParam(required = false) String email, @RequestHeader(required = false) String Token) {
-        //change later to required = true and delete this line
+    public ResponseEntity<TeammembersListRequest> findTeammemberBy(@RequestParam(required = false) Integer memberId,
+            @RequestParam(required = false) Integer teamId,
+            @RequestParam(required = false) String email, @RequestHeader(required = false) String Token) {
+        // change later to required = true and delete this line
         String UserName = "API";
         if (Token != null && Token != "")
             UserName = jwtToken.getUsernameFromToken(Token);
@@ -664,12 +691,12 @@ public class AdminAPI {
             throw new ValidationException("Not enough data provided");
 
         return ResponseEntity.ok(
-                teammembersService.findByTeammemberProperties(memberId, teamId, email)
-        );
+                teammembersService.findByTeammemberProperties(memberId, teamId, email));
     }
 
     @GetMapping("/WorkingTree")
-    public ResponseEntity<WorkingTreeListRequest> getWorkingTree(@RequestParam(required = false) String email, @RequestHeader(required = false) String Token) {
+    public ResponseEntity<WorkingTreeListRequest> getWorkingTree(@RequestParam(required = false) String email,
+            @RequestHeader(required = false) String Token) {
         if (Token != null && Token != "")
             email = jwtToken.getUsernameFromToken(Token);
 
@@ -677,7 +704,8 @@ public class AdminAPI {
             throw new ValidationException("Not enough data provided");
 
         WorkingTreeListRequest response = new WorkingTreeListRequest();
-        TeammembersListRequest teammembersListRequest = teammembersService.findByTeammemberProperties(null, null, email);
+        TeammembersListRequest teammembersListRequest = teammembersService.findByTeammemberProperties(null, null,
+                email);
         for (TeammembersRequest teammember : teammembersListRequest.getTeammembersRequestList()) {
             WorkingTreeRequest workingTreeRequest = new WorkingTreeRequest();
             workingTreeRequest.setEmail(email);
