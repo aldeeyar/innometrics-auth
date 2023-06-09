@@ -82,7 +82,7 @@ public class AdminAPI {
     public ResponseEntity<String> getDemo() {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("MyResponseHeader", "MyValue");
-        return new ResponseEntity<String>("Version5", responseHeaders, HttpStatus.OK);
+        return new ResponseEntity<String>("Version6", responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/Project")
